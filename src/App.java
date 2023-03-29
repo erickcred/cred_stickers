@@ -1,13 +1,10 @@
 import utils.JsonParser;
 
-import java.net.URI;
 import java.net.URL;
-import java.net.http.HttpClient;
-import java.net.http.HttpRequest;
-import java.net.http.HttpResponse;
-import java.net.http.HttpResponse.BodyHandlers;
 import java.util.List;
 import java.util.Map;
+
+import model.RConteudo;
 
 public class App {
 
@@ -19,39 +16,28 @@ public class App {
     public static void main(String[] args) throws Exception {
 
         // Fazer uma conexão HTTP e buscar os top 250 filmes
-        // String url = "https://imdb-api.com/en/API/Top250Movies/";
         String url = "https://raw.githubusercontent.com/alura-cursos/imersao-java-2-api/main/TopMovies.json";
-        URI basePath = URI.create(url);
-        HttpClient client = HttpClient.newHttpClient();
+        ExtratorDeConteudoDaIMBDb extrator = new ExtratorDeConteudoDaIMBDb();
+        // String url =
+        // "https://api.nasa.gov/planetary/apod?api_key=DEMO_KEY&start_date=2022-06-01&end_date=2022-06-14";
+        // ExtratorDeConteudoDaNasa extrator = new ExtratorDeConteudoDaNasa();
 
-        HttpRequest request = HttpRequest.newBuilder(basePath).GET().build();
-        HttpResponse<String> response = client.send(request, BodyHandlers.ofString());
-        String data = response.body();
-        // System.out.println(data);
+        ClienteHttp clienteHttp = new ClienteHttp();
+        String json = clienteHttp.buscaDados(url);
 
         // Extrair só os dados que interessam (title, image, imDbRating ->
         // classificação)
-        JsonParser parser = new JsonParser();
-        List<Map<String, String>> listaDeFilmes = parser.parse(data);
         GeradorFigurinhas figurinha = new GeradorFigurinhas();
 
-        // Exibir manipular os dados
-        for (Map<String, String> filme : listaDeFilmes) {
-            System.out.println("Title: " + filme.get("title"));
-            System.out.println("Image: " + filme.get("image"));
-            System.out.print(ANSI_BG_PURPLE + ANSI_BLACK);
-            System.out.print("Classificação: " + filme.get("imDbRating"));
-            System.out.println(ANSI_RESET);
+        // Exibir e manipular os dados
 
-            int star = Integer.parseInt(filme.get("imDbRating").substring(0, 1));
-            for (int i = 0; i < star; i++) {
-                System.out.print(ANSI_YELLOW + "\uD83C\uDF1F " + ANSI_RESET);
-            }
-            System.out.println("\n");
-
+        for (RConteudo conteudo : extrator.extraiConteudos(json)) {
             try {
-                figurinha.criar(filme.get("title"), new URL(filme.get("image")).openStream(),
-                        "");
+                // figurinha.criar(conteudo.getTitle(), new URL(conteudo.getUrl()).openStream(),
+                // "./src/saida_nasa");
+
+                figurinha.criar(conteudo.title(), new URL(conteudo.url()).openStream(),
+                        "./src/saida_imdb");
             } catch (Exception e) {
                 System.out.println("erro: " + e.getMessage());
             }
