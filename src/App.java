@@ -33,7 +33,8 @@ public class App {
         // classificação)
         JsonParser parser = new JsonParser();
         List<Map<String, String>> listaDeFilmes = parser.parse(data);
-        
+        GeradorFigurinhas figurinha = new GeradorFigurinhas();
+
         // Exibir manipular os dados
         for (Map<String, String> filme : listaDeFilmes) {
             System.out.println("Title: " + filme.get("title"));
@@ -48,7 +49,12 @@ public class App {
             }
             System.out.println("\n");
 
-            
+            try {
+                figurinha.criar(filme.get("title"), new URL(filme.get("image")).openStream(),
+                        "");
+            } catch (Exception e) {
+                System.out.println("erro: " + e.getMessage());
+            }
         }
 
     }
